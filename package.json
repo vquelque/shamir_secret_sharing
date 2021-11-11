@@ -1,0 +1,30 @@
+{
+  "name": "bip39_ts_shamir_secret_sharing",
+  "version": "1.0.0",
+  "description": "Typescript implementation of Shamir Secret Sharing for BIP-39 mnemonics",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vquelque/shamir_secret_sharing.git"
+  },
+  "author": "Valentin Quelquejay",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vquelque/shamir_secret_sharing/issues"
+  },
+  "homepage": "https://github.com/vquelque/shamir_secret_sharing#readme",
+  "dependencies": {
+    "bip39": "^3.0.4",
+    "crypto": "^1.0.1",
+    "randombytes": "^2.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.2",
+    "jest": "^27.3.1",
+    "ts-jest": "^27.0.7",
+    "typescript": "^4.4.4"
+  }
+}
