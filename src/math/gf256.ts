@@ -88,6 +88,8 @@ const LOG = [
 
 // Addition is in GF(256) is XOR.
 export function add(x: number, y: number): number {
+  checkRange(x)
+  checkRange(y)
   return x ^ y;
 }
 
@@ -95,6 +97,8 @@ export function add(x: number, y: number): number {
 export const sub = add;
 
 export function mul(x: number, y: number): number {
+  checkRange(x)
+  checkRange(y)
   const ls = LOG[x] + LOG[y];
   let result = EXP[(ls & 0xff) + (ls >> 8)];
   // Constant time equivalent of if (x === 0 || y === 0) result = 0.
@@ -104,6 +108,8 @@ export function mul(x: number, y: number): number {
 }
 
 export function div(x: number, y: number): number {
+  checkRange(x)
+  checkRange(y)
   if (y === 0) {
       throw new Error("gf256: division by zero");
   }
@@ -114,10 +120,12 @@ export function div(x: number, y: number): number {
 }
 
 export function exp(x: number): number {
+  checkRange(x)
   return EXP[x];
 }
 
 export function log(x: number): number {
+  checkRange(x)
   if (x === 0) {
       throw new Error("gf256: no log(0)");
   }
@@ -125,8 +133,15 @@ export function log(x: number): number {
 }
 
 export function inv(x: number): number {
+  checkRange(x)
   if (x === 0) {
       throw new Error("gf256: no inv(0)");
   }
   return EXP[255 - LOG[x]];
+}
+
+export function checkRange(x: number) {
+  if (x < 0 || x > 255) {
+    throw new RangeError("Integer needs to be between 0 and 255")
+  }
 }
