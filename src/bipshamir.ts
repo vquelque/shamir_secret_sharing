@@ -8,7 +8,6 @@ import { config } from "./constants/config";
 export class BIPShamir {
   numShares: number;
   minRecovery: number;
-  wordList: Set<string>;
 
   /**
    * Constructs a new Shamir's secret sharing model splitting the secret into `numShares` and requiring
@@ -24,8 +23,7 @@ export class BIPShamir {
       minRecovery < config.MIN_RECOVERY ||
       minRecovery > numShares
     ) {
-      console.error("wrong Shamir parameters");
-      return null;
+      throw new Error("wrong Shamir parameters");
     }
     this.numShares = numShares;
     this.minRecovery = minRecovery;
@@ -34,9 +32,9 @@ export class BIPShamir {
   createShares(mnemonic: string) {
     const secret = mnemonicToEntropy(mnemonic);
     const hexShares = this.splitHex(secret);
-    const mnemonicShares = Object.keys(hexShares).reduce((accum, id) => {
+    const mnemonicShares = Object.keys(hexShares).reduce<BIPShares>((accum, id) => {
       const mnemonicShare = entropyToMnemonic(hexShares[id]);
-      accum.push({ x: id, y: mnemonicShare });
+      accum.push({ x: id , y: mnemonicShare });
       return accum;
     }, []);
     const encodedShares = this.createEncodedShares(mnemonicShares);
@@ -44,17 +42,19 @@ export class BIPShamir {
   }
 
   static recoverSecret(shares: encodedShares) {
-    const [decodedShares, _ , minRecovery] = this.decodeEncodedShares(shares);
-    const numShares = decodedShares.length
-    if (numShares< minRecovery) {
-      throw new Error(`Not enough shares to recover the secret ! You provided ${numShares} shares but you need at least ${minRecovery} shares\n`)
+    const [decodedShares, _, minRecovery] = this.decodeEncodedShares(shares);
+    const numShares = decodedShares.length;
+    if (numShares < minRecovery) {
+      throw new Error(
+        `Not enough shares to recover the secret ! You provided ${numShares} shares but you need at least ${minRecovery} shares\n`
+      );
     }
-    const recoveredEntropy = this.recoverMnemonicFromShares(decodedShares)
-    const recoveredMnemonic = entropyToMnemonic(recoveredEntropy)
-    return recoveredMnemonic
+    const recoveredEntropy = this.recoverMnemonicFromShares(decodedShares);
+    const recoveredMnemonic = entropyToMnemonic(recoveredEntropy);
+    return recoveredMnemonic;
   }
 
-  private static recoverMnemonicFromShares(shares: BIPShares) {
+  private static recoverMnemonicFromShares(shares: Array<share>) {
     // x coordinatex of shares
     const x: number[] = [];
     // y coordinates of points to interpolate
@@ -62,7 +62,7 @@ export class BIPShamir {
 
     shares.forEach((share, i) => {
       const entropy = hexStringToUint8Array(mnemonicToEntropy(share.y));
-      const x_share = parseInt(share.x, 10);
+      const x_share = parseInt(share.x, 16);
       x.push(x_share);
       entropy.forEach((n, j) => {
         if (!y[j]) {
@@ -100,20 +100,25 @@ export class BIPShamir {
         });
     });
 
-    const sharesHex = pointsByShare.reduce((accum, curr) => {
-      curr.forEach((share) => {
-        if (!accum[share.x]) {
-          accum[share.x] = share.y;
-        } else {
-          accum[share.x] += share.y;
-        }
-      });
-      return accum;
-    }, {});
+    const sharesHex = pointsByShare.reduce<Record<string, string>>(
+      (accum, curr) => {
+        curr.forEach((share: share) => {
+          if (!accum[share.x]) {
+            accum[share.x] = share.y;
+          } else {
+            accum[share.x] += share.y;
+          }
+        });
+        return accum;
+      },
+      {}
+    );
     return sharesHex;
   }
 
-  // encode the x coordinate and the version of the protocol to the share
+  // Encode the version of the protocol, the minimal number of shares needed to recover
+  // and the point used to evalute the share
+  // should output `VxxMxxPxx`
   private createEncodedShares(secret: BIPShares) {
     const version = config.VERSION;
     return secret.map((share) => {
@@ -126,29 +131,38 @@ export class BIPShamir {
     });
   }
 
-  private static decodeEncodedShares(encodedShares: encodedShares) {
-    let version
-    let minRecovery
-    const decodedShares = encodedShares.map((encodedShare) => {
-      const reg = /V([0-9A-F]{2})M([0-9A-F]{2})P([0-9A-F]{2})\s((?:\w+\s?){15})/;
+  private static decodeEncodedShares(encodedShares: encodedShares): [Array<share>,number,number] {
+    let version = -1;
+    let minRecovery = -1;
+    const decodedShares = encodedShares.reduce<
+      Record<string, share>
+    >((acc, encodedShare) => {
+      const reg =
+        /V([0-9A-F]{2})M([0-9A-F]{2})P([0-9A-F]{2})\s((?:\w+\s?){15})/;
       const splittedShare = encodedShare.match(reg);
       if (!splittedShare) {
         throw new TypeError("encoded share is not valid");
       }
       const _version = parseInt(splittedShare[1], 16);
-      const _minRecovery = parseInt(splittedShare[2],16)
-      version = version ? version : _version
-      minRecovery = minRecovery ? minRecovery : _minRecovery
-      if (_version != version) {
-        throw new Error("Shares versions do not match !")
+      const _minRecovery = parseInt(splittedShare[2], 16);
+      if (version < 0) {
+        version = _version
       }
-      if (_minRecovery != minRecovery) {
-        throw new Error("Shares recovery threshold do not match !")
+      minRecovery = minRecovery > 0 ? minRecovery : _minRecovery;
+      if (version !== _version) {
+        throw new Error("Shares versions do not match !");
       }
-      const x = parseInt(splittedShare[3], 16);
+      if (_minRecovery !== minRecovery) {
+        throw new Error("Shares recovery threshold do not match !");
+      }
+      const x = splittedShare[3];
       const bipShare = splittedShare[4];
-      return {x: x, y:bipShare}
-    });
-    return [decodedShares, version, minRecovery]
+      const share = { x: x, y: bipShare };
+      if (!acc[x]) {
+        acc[x] = share;
+      }
+      return acc;
+    }, {});
+    return [Object.values(decodedShares), version, minRecovery];
   }
 }
