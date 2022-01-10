@@ -1,10 +1,15 @@
 {
-  "name": "bip39_ts_shamir_secret_sharing",
+  "name": "shamir_bip39",
   "version": "1.0.0",
   "description": "Typescript implementation of Shamir Secret Sharing for BIP-39 mnemonics",
-  "main": "index.ts",
+  "main": "./lib/cjs/index.js",
+  "module": "./lib/esm/index.js",
+  "types": "./lib/esm/index.d.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "yarn build:esm && yarn build:cjs",
+    "build:esm": "tsc",
+    "build:cjs": "tsc --module commonjs --outDir lib/cjs"
   },
   "repository": {
     "type": "git",
@@ -25,5 +30,8 @@
     "jest": "^27.3.1",
     "ts-jest": "^27.0.7",
     "typescript": "^4.4.4"
-  }
+  },
+  "files": [
+    "/lib"
+  ]
 }

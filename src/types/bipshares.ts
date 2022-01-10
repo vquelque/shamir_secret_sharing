@@ -1,8 +1,16 @@
-export type BIPShares = share[]
+// Contains an array of shares
+export type BIPShares = Share[];
 
-export type share = {
-    x: string
-    y: string
-}
+// Represents a share `y` evaluated at coordinate `x` 
+export type Share = {
+  x: string;
+  y: string;
+};
 
-export type encodedShares = string[]
+// Array of shares encoded as string
+export type EncodedShares = string[];
+
+// Underlying entropy of BIP-39 mnemonic
+export type Entropy = string
+
+export type ShareMnemonic = string
