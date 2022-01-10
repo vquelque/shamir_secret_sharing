@@ -1,3 +1,6 @@
+/**
+ * Given a string, returns whether this string represents a hex number
+ */
 export declare function isHex(hex: string): boolean;
 /**
  * Given a hex string, return a vector of numbers, where

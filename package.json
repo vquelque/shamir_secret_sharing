@@ -1,10 +1,10 @@
 {
-  "name": "shamir_bip39",
+  "name": "@vquelque/shamir_bip39",
   "version": "1.0.0",
   "description": "Typescript implementation of Shamir Secret Sharing for BIP-39 mnemonics",
-  "main": "./lib/cjs/index.js",
-  "module": "./lib/esm/index.js",
-  "types": "./lib/esm/index.d.ts",
+  "main": "./lib/cjs/bipshamir.js",
+  "module": "./lib/esm/bipshamir.js",
+  "types": "./lib/esm/bipshamir.d.ts",
   "scripts": {
     "test": "jest",
     "build": "yarn build:esm && yarn build:cjs",
@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/vquelque/shamir_secret_sharing.git"
   },
-  "author": "Valentin Quelquejay",
+  "author": "Valentin Quelquejay <valquel@pm.me>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/vquelque/shamir_secret_sharing/issues"
