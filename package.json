@@ -1,6 +1,6 @@
 {
   "name": "@vquelque/shamir_bip39",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Typescript implementation of Shamir Secret Sharing for BIP-39 mnemonics",
   "main": "./lib/cjs/bipshamir.js",
   "module": "./lib/esm/bipshamir.js",
