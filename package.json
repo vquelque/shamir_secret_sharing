@@ -22,8 +22,7 @@
   },
   "homepage": "https://github.com/vquelque/shamir_secret_sharing#readme",
   "dependencies": {
-    "bip39": "^3.0.4",
-    "crypto": "^1.0.1"
+    "bip39": "^3.0.4"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
